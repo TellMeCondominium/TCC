@@ -9,7 +9,7 @@ public class AdiconaTarefa {
 	public static void main(String[] args) {
 		ServicoFabricanteDAO fabricanteDAO = new ServicoFabricanteDAOImpl();
 		Fabricante samsumg = new Fabricante();
-		samsumg.setDescricao("Nokia");
+		samsumg.setDescricao("Dell");
 		
 		fabricanteDAO.inserir(samsumg);
 		

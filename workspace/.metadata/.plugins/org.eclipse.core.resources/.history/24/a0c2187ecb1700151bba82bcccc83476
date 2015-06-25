@@ -1,0 +1,20 @@
+package dao;
+
+import java.sql.SQLException;
+
+import factory.PersistenceFactory;
+import model.Fabricante;
+
+public class ServicoFabricanteDAOImpl {
+	
+	public void inserir(Fabricante novo){
+		try{
+			PersistenceFactory.incluir(novo);
+		}
+		catch(Exception ex){
+			ex.printStackTrace();
+		}
+		
+	}
+
+}

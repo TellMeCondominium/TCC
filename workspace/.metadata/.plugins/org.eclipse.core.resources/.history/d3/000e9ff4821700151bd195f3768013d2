@@ -1,0 +1,7 @@
+package util;
+
+public enum DataBadeDML {
+	INSERT("INSERT INTO ");
+	
+
+}

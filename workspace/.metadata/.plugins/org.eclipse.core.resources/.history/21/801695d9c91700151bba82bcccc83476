@@ -1,0 +1,26 @@
+package factory;
+
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.Persistence;
+
+import model.Fabricante;
+
+
+
+public class AdiconaTarefa {
+
+	public static void main(String[] args) {
+		Object f = AdiconaTarefa.obterPorId(1);
+		Fabricante fab = new Fabricante();
+		fab = (Fabricante) f;
+		System.out.println("Fab "+ fab.getDescricao());
+	}
+	
+	private static Fabricante obterPorId(int id){
+		EntityManagerFactory factory = Persistence.createEntityManagerFactory("TCM");
+		EntityManager manager = factory.createEntityManager();
+		return manager.find(Fabricante.class, id);
+	}
+
+}

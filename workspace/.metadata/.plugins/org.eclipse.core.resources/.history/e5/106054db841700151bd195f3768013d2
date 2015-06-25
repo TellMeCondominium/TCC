@@ -1,0 +1,33 @@
+package dao;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+
+import factory.ConexaoFactory;
+import model.Fabricante;
+
+public class FabricanteDAO {
+	public static final String TABELA = "FABRICANTE";
+	public void inserir(Fabricante novo){
+		StringBuilder sql  = new StringBuilder();
+		sql.append("INSERT INTO FABRICANTE ");
+		sql.append("VALUES (?)");
+		try{
+			//abre conexão com o banco de dados
+			Connection con = ConexaoFactory.conectar();
+			
+			PreparedStatement cmd = con.prepareStatement(sql.toString());
+			cmd.setString(1, novo.getDescricao());
+			
+			cmd.execute();
+			con.close();
+		}
+		catch(SQLException ex){
+			ex.printStackTrace();
+		}
+		catch (Exception ex) {
+			ex.printStackTrace();
+		}
+	}
+}

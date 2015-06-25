@@ -1,0 +1,187 @@
+package data.dao;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
+
+import util.Conection;
+import data.model.TipoSolicitacao;
+
+public class ServicoTipoSolicitacaoDAOImpl extends Conection implements ServicoTipoSolicitacaoDAO {
+
+	 PreparedStatement pstmt;
+	 Statement st;
+	 ResultSet rs;
+	 Connection con;
+
+	public void inserir(TipoSolicitacao novo) throws Exception {
+		try {
+			//abre conexao com o banco
+		    con = this.abreConexao();
+		    //insere o registro
+			String sql = "insert into TipoSolicitacao values(?, ?, ?, ?)";
+			pstmt = con.prepareStatement(sql);
+			pstmt.setInt(1, novo.getidItem());
+			pstmt.setInt(2, novo.getidSubItem());
+			pstmt.setInt(3, novo.getidTipo());
+			pstmt.setTime(4, novo.getTempoResposta());
+			pstmt.execute();
+	        con.close();
+		} 
+		catch (SQLException e) {
+			throw new Exception(e.getMessage());
+		}
+		catch (Exception e) {
+			throw new Exception(e.getMessage());
+		}
+		finally{
+			con.close();
+		}
+	}
+	
+	public void alterar(TipoSolicitacao tipoSolicitacao) throws Exception
+	{
+		try {
+			if(tipoSolicitacao.getTempoResposta() == null ||
+					tipoSolicitacao.getidItem() == null || 
+					tipoSolicitacao.getidSubItem() == null||
+					tipoSolicitacao.getidTipo() == null)
+				throw new Exception("Informe todos os dados para a alteração.");
+			
+			//abre conexao com o banco
+		    con = this.abreConexao();
+		    String sql = "UPDATE TIPO_SOLICITACAO SET TEMPO_RESPOSTA = ? \n"+
+						" WHERE ID_ITEM = ? \n"+
+						" AND ID_SUB_ITEM = ? \n"+
+						" AND ID_TIPO = ?";
+			pstmt = con.prepareStatement(sql);
+			pstmt.setTime(1, tipoSolicitacao.getTempoResposta());
+			pstmt.setInt(2, tipoSolicitacao.getidItem());
+			pstmt.setInt(3, tipoSolicitacao.getidSubItem());
+			pstmt.setInt(4, tipoSolicitacao.getidTipo());
+			
+			pstmt.execute();
+			
+	        con.close();
+		} 
+		catch (SQLException e) {
+			if(e.getErrorCode() == 2627)
+				throw new Exception("Não foi possível inserir o registro/ Registro já existe.");
+			throw new Exception(e.getMessage());
+		}
+		catch (Exception e) {
+			throw new Exception(e.getMessage());
+		}
+		finally{
+			con.close();
+		}
+	}
+	
+	public void remover(TipoSolicitacao tipoSolicitacao) throws Exception {
+		try {
+			if(tipoSolicitacao.getidItem() == null || 
+					tipoSolicitacao.getidSubItem() == null||
+					tipoSolicitacao.getidTipo() == null)
+				throw new Exception("Informe Item, SubItem e Tipo para a exclusão.");
+		    con = this.abreConexao();
+
+		    String sql = "DELETE FROM TIPO_SOLICITACAO \n"+
+				" WHERE ID_ITEM = ? \n"+
+				" AND ID_SUB_ITEM = ? \n"+
+				" AND ID_TIPO = ?";
+			pstmt = con.prepareStatement(sql);
+			pstmt.setInt(1, tipoSolicitacao.getidItem());
+			pstmt.setInt(2, tipoSolicitacao.getidSubItem());
+			pstmt.setInt(3, tipoSolicitacao.getidTipo());
+			pstmt.execute();
+			
+	        con.close();
+		} 
+		catch (SQLException e) {
+			throw new Exception(e.getMessage());
+		}
+		catch (Exception e) {
+			throw new Exception(e.getMessage());
+		}
+		finally{
+			con.close();
+		}
+	}
+	
+	public TipoSolicitacao obter(TipoSolicitacao tipoSolicitacao) throws Exception {
+		try {
+			if(tipoSolicitacao.getidItem() == null || 
+					tipoSolicitacao.getidSubItem() == null||
+					tipoSolicitacao.getidTipo() == null)
+				throw new Exception("Informe Item, SubItem e Tipo para a busca.");
+			con = this.abreConexao();
+			
+			String sql = "SELECT * FROM TIPO_SOLICITACAO \n"+
+				" WHERE ID_ITEM = ? \n"+
+				" AND ID_SUB_ITEM = ? \n"+
+				" AND ID_TIPO = ?";
+			pstmt = con.prepareStatement(sql);
+			pstmt.setInt(1, tipoSolicitacao.getidItem());
+			pstmt.setInt(2, tipoSolicitacao.getidSubItem());
+			pstmt.setInt(3, tipoSolicitacao.getidTipo());
+
+			rs = pstmt.executeQuery();
+			TipoSolicitacao retorno = new TipoSolicitacao();
+			if (rs.getFetchSize() > 0 ) {
+				rs.next();
+				retorno = new TipoSolicitacao(rs.getInt("ID_ITEM"), 
+						rs.getInt("ID_SUB_ITEM"),
+						rs.getInt("ID_TIPO"),
+						rs.getTime("TEMPO_RESPOSTA"));
+			}
+			return retorno;
+			
+		} 
+		catch (SQLException e) {
+			throw new Exception(e.getMessage());
+		} 
+		catch (Exception e) {
+			throw new Exception(e.getMessage());
+		} 
+		finally {
+			con.close();
+		}
+	}
+	
+	public TipoSolicitacao[] listar() throws Exception {
+		try {
+			con = this.abreConexao();
+			
+			List<TipoSolicitacao> lista = new ArrayList<TipoSolicitacao>();
+			
+			
+			String sql = "SELECT * FROM TIPO_SOLICITACAO";
+			pstmt = con.prepareStatement(sql);
+
+			rs = pstmt.executeQuery();
+			while (rs.next()) {
+				TipoSolicitacao TipoSolicitacao =  new TipoSolicitacao(rs.getInt("ID_ITEM"), 
+						rs.getInt("ID_SUB_ITEM"),
+						rs.getInt("ID_TIPO"),
+						rs.getTime("TEMPO_RESPOSTA"));
+				lista.add(TipoSolicitacao); 
+			}
+			TipoSolicitacao[] retorno =  lista.toArray(new TipoSolicitacao[0]);
+			return retorno;
+		}
+		catch (SQLException e) {
+			throw new Exception(e.getMessage());
+		}
+		catch (Exception e) {
+			throw new Exception(e.getMessage());
+		} 
+		finally {
+			con.close();
+		}
+		
+	}
+}

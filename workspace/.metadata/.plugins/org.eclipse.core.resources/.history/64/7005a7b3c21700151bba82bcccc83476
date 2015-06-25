@@ -1,0 +1,15 @@
+package factory;
+
+
+import model.Fabricante;
+
+public class AdiconaTarefa {
+
+	public static void main(String[] args) {
+		//inicia a conexao
+		Fabricante f = new Fabricante();
+		f.setDescricao("Apple");
+		PersistenceFactory.incluir(f);
+	}
+
+}

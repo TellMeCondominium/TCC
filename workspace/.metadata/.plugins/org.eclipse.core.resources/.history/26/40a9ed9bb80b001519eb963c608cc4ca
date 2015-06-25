@@ -1,0 +1,206 @@
+package data.dao;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
+
+import util.Conection;
+import data.model.Condominio;
+
+public class ServicoCondominioDAOImpl extends Conection implements ServicoCondominioDAO {
+
+	 PreparedStatement pstmt;
+	 Statement st;
+	 ResultSet rs;
+	 Connection con;
+
+	public Condominio inserir(Condominio novo) throws Exception {
+		try {
+			//abre conexao com o banco
+		    con = this.abreConexao();
+		    con.setAutoCommit(false);  
+		    //insere o registro
+			String sql = "INSERT INTO CONDOMINIO VALUES (?, ?, ?, ?, ?, ?)";
+			pstmt = con.prepareStatement(sql);
+			pstmt.setString(1, novo.getNomeCondominio());
+			pstmt.setString(2, novo.getCnpj());
+			pstmt.setString(3, novo.getCep());
+			pstmt.setString(4, novo.getNumero());
+			pstmt.setString(5, novo.getComplemento());
+			pstmt.setString(6, novo.getDisposicao());
+			pstmt.execute();
+			
+			//busca ID gerado para devolver entidade completa
+			sql = "select @@identity as ID";
+			st = con.createStatement();
+			rs = st.executeQuery(sql);
+	        while (rs.next()){
+	        	novo.setIdCondominio(rs.getInt("ID"));
+            }
+	        con.commit();
+	        con.setAutoCommit(true);  
+	        con.close();
+	        return novo;
+		} 
+		catch (SQLException e) {
+			if(e.getErrorCode() == 2627)
+				throw new Exception("Não foi possível inserir o registro/ Registro já existe.");
+			throw new Exception(e.getMessage());
+		}
+		catch (Exception e) {
+			throw new Exception(e.getMessage());
+		}
+		finally{
+			con.close();
+		}
+	}
+	
+	public void alterar(Integer id,Condominio condominio) throws Exception
+	{
+		try {
+			//abre conexao com o banco
+		    con = this.abreConexao();
+
+		    String sql = "UPDATE CONDOMINIO SET NOME_CONDOMINIO = ?, CNPJ = ?, /n/r "+ 
+								" CEP = ?, NUMERO = ?, COMPLEMENTO = ?, DISPOSICAO = ? /n/r"+
+								" WHERE ID_CONDOMINIO = ?";
+			pstmt = con.prepareStatement(sql);
+			pstmt.setString(1, condominio.getNomeCondominio());
+			pstmt.setString(2, condominio.getCnpj());
+			pstmt.setString(3, condominio.getCep());
+			pstmt.setString(4, condominio.getNumero());
+			pstmt.setString(5, condominio.getComplemento());
+			pstmt.setString(6, condominio.getDisposicao());
+			pstmt.setInt(7, id);
+			pstmt.execute();
+			
+	        con.close();
+		} 
+		catch (SQLException e) {
+			if(e.getErrorCode() == 2627)
+				throw new Exception("Não foi possível alterar o registro pois já há um registro com esse CNPJ.");
+			throw new Exception(e.getMessage());
+		}
+		catch (Exception e) {
+			throw new Exception(e.getMessage());
+		}
+		finally{
+			con.close();
+		}
+	}
+	
+	public void remover(Integer id) throws Exception {
+		try {
+			//abre conexao com o banco
+		    con = this.abreConexao();
+
+		    String sql = "DELETE FROM CONDOMINIO WHERE ID_CONDOMINIO = ?";
+			pstmt = con.prepareStatement(sql);
+			pstmt.setInt(1, id);
+			pstmt.execute();
+			
+	        con.close();
+		} 
+		catch (SQLException e) {
+			throw new Exception(e.getMessage());
+		}
+		catch (Exception e) {
+			throw new Exception(e.getMessage());
+		}
+		finally{
+			con.close();
+		}
+	}
+	
+	public Condominio obter(Integer id, String cnpj) throws Exception {
+		try {
+			con = this.abreConexao();
+			
+			Condominio retorno = new Condominio();
+			
+			if (id == null && (cnpj == null || cnpj == ""))
+				throw new Exception("Informe o ID ou o CNPJ para obter o Condominio");
+			
+			String sql = "SELECT * FROM CONDOMINIO ";
+			if(id==null){
+				sql+= " WHERE CNPJ = ?";
+			}
+			else{
+				sql+= " WHERE ID_CONDOMINIO = ?";
+			}
+			pstmt = con.prepareStatement(sql);
+			if(id==null){
+				pstmt.setString(1, cnpj);
+			}
+			else{
+				pstmt.setInt(1, id);
+			}
+
+			rs = pstmt.executeQuery();
+
+			if (rs.getFetchSize() > 0 ) {
+				rs.next();
+				retorno = new Condominio(rs.getInt("ID_CONDOMINIO"), rs.getString("NOME_CONDOMINIO"), rs.getString("CNPJ"),
+						rs.getString("CEP"), rs.getString("NUMERO"), rs.getString("COMPLEMENTO"), rs.getString("DISPOSICAO"));
+			}
+			return retorno;
+		} 
+		catch (SQLException e) {
+			throw new Exception(e.getMessage());
+		} 
+		catch (Exception e) {
+			throw new Exception(e.getMessage());
+		} finally {
+			con.close();
+		}
+	}
+	
+	public Condominio[] listar(Integer id, String nome, String cnpj, 
+			String cep, String numero, String complemento, String disposicao) throws Exception {
+		try {
+			con = this.abreConexao();
+			
+			List<Condominio> lista = new ArrayList<Condominio>();
+			
+			String sql = "SELECT * FROM CONDOMINIO WHERE 1 = 1 ";
+			if(id != null)
+				sql+= " AND ID_CONDOMINIO = " + id;
+			if(nome != null && nome != "")
+				sql+= " AND NOME_CONDOMINIO = '" + nome + "' ";
+			if(cnpj != null && cnpj != "")
+				sql+= " AND CNPJ = '" + cnpj + "' ";
+			if(cep != null && cep != "")
+				sql+= " AND CEP = '" + cep + "' ";
+			if(numero != null && numero != "")
+				sql+= " AND NUMERO = '" + numero + "' ";
+			if(complemento != null && complemento != "")
+				sql+= " AND COMPLEMENTO = '" + complemento + "' ";
+			if(disposicao != null && disposicao != "")
+				sql+= " DISPOSICAO = '" + disposicao + "' ";
+			
+			pstmt = con.prepareStatement(sql);
+
+			rs = pstmt.executeQuery();
+			while (rs.next()) {
+				Condominio item =  new Condominio(rs.getInt("ID_CONDOMINIO"), rs.getString("NOME_CONDOMINIO"), rs.getString("CNPJ"),
+						rs.getString("CEP"), rs.getString("NUMERO"), rs.getString("COMPLEMENTO"), rs.getString("DISPOSICAO"));
+				lista.add(item); 
+			}
+			Condominio[] retorno =  lista.toArray(new Condominio[0]);
+			return retorno;
+		}
+		catch (SQLException e) {
+			throw new Exception(e.getMessage());
+		}
+		catch (Exception e) {
+			throw new Exception(e.getMessage());
+		} 
+		finally {
+			con.close();
+		}
+	}
+}

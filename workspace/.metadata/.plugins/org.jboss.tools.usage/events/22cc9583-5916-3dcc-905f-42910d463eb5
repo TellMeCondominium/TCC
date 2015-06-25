@@ -1,0 +1,11 @@
+#Thu Jun 25 00:08:06 BRT 2015
+vl=How many times the 'Finish' button pressed during the day
+l=Wizard class name
+ct=jbt
+d=1435201686206
+c=0
+cmp=usage
+a=finishWizard
+cl=org.eclipse.equinox.internal.p2.ui.dialogs.InstallWizard
+v=2.0.2
+s=1

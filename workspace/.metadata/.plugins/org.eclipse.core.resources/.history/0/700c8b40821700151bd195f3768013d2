@@ -1,0 +1,10 @@
+package util;
+
+public class Validacoes {
+	public boolean ehNullOuVazio(String a){
+		if(a =="" || a == null)
+			return true;
+		return false;
+	}
+
+}

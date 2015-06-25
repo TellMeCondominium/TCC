@@ -1,0 +1,43 @@
+package factory;
+
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.EntityTransaction;
+import javax.persistence.Persistence;
+
+public class PersistenceFactory {
+	private static final String NAME = "TCM";
+	
+	
+	public static void incluir(Object entidade){
+		EntityManagerFactory factory = Persistence.createEntityManagerFactory(NAME);
+	    EntityManager manager = factory.createEntityManager();
+	    EntityTransaction transaction = manager.getTransaction();
+		transaction.begin();
+		manager.persist(entidade);
+	    transaction.commit();  
+	    manager.close();
+	    factory.close();
+	}
+	
+	public static void alterar(Object entidade){
+		EntityManagerFactory factory = Persistence.createEntityManagerFactory(NAME);
+	    EntityManager manager = factory.createEntityManager();
+	    EntityTransaction transaction = manager.getTransaction();
+		transaction.begin();
+		manager.merge(entidade);
+	    transaction.commit();  
+	    manager.close();
+	    factory.close();
+	}
+	
+	public static Object obterPorId(Integer id){
+		EntityManagerFactory factory = Persistence.createEntityManagerFactory(NAME);
+	    EntityManager manager = factory.createEntityManager();
+		Object retorno = manager.find(Object.class, id);
+	    manager.close();
+	    factory.close();
+	    return retorno;
+	}
+
+}

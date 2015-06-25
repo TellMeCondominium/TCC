@@ -1,0 +1,52 @@
+package data.dao;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+
+import util.Conection;
+import data.model.Item;
+
+public class ServicoItemDAOImpl extends Conection implements ServicoItemDAO {
+
+	 PreparedStatement pstmt;
+	 Statement st;
+	 ResultSet rs;
+	 Connection con;
+
+	@Override
+	public Item inserir(Item novo) throws Exception {
+		try {
+			//abre conexao com o banco
+		    con = this.abreConexao();
+		    
+		    //insere o registro
+			String sql = "insert into item values(?)";
+			pstmt = con.prepareStatement(sql);
+			pstmt.setString(1, novo.getItemDescricao());
+			pstmt.execute();
+			
+			//busca ID gerado para devolver entidade completa
+			sql = "select @@identity as ID";
+			st = con.createStatement();
+			rs = st.executeQuery(sql);
+	        while (rs.next()){
+	        	novo.setIdItem(rs.getInt("ID"));
+            }
+			
+		} 
+		catch (SQLException e) {
+			throw new Exception(e.getMessage());
+		}
+		finally{
+			//fecha conexões
+			pstmt.close();
+			st.close();
+			con.close();
+		}
+		return novo;
+	}
+
+}

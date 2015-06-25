@@ -1,0 +1,23 @@
+package dao;
+
+import java.util.List;
+
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.Persistence;
+
+import model.Fabricante;
+import factory.PersistenceFactory;
+
+public interface ServicoFabricanteDAO {
+	public void inserir(Fabricante novo) ;
+
+	public void alterar(Fabricante novo) ;
+
+	public void remover(Fabricante novo) ;
+
+	public Fabricante obterPorId(int id) ;
+
+	public List<Fabricante> listar();
+
+}

@@ -1,0 +1,14 @@
+package factory;
+
+import javax.persistence.EntityManagerFactory;
+
+import org.hibernate.mapping.Map;
+
+public abstract class Persistence {
+	public abstract EntityManagerFactory createEntityManagerFactory(
+			String unitName);
+
+	public abstract EntityManagerFactory createEntityManagerFactory(
+			String unitName, Map properties);
+
+}

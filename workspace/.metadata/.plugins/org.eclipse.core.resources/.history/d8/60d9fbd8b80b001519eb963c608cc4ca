@@ -1,0 +1,214 @@
+package data.dao;
+
+import java.sql.Connection;
+import java.sql.Date;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
+
+import util.Conection;
+import data.model.Sindico;
+
+public class ServicoSindicoDAOImpl extends Conection implements ServicoSindicoDAO {
+
+	 PreparedStatement pstmt;
+	 Statement st;
+	 ResultSet rs;
+	 Connection con;
+
+	public Sindico inserir(Sindico novo) throws Exception {
+		try {
+			//abre conexao com o banco
+		    con = this.abreConexao();
+		    con.setAutoCommit(false);  
+		    //insere o registro
+			String sql = "INSERT INTO SINDICO VALUES(?, ?, ?, ?)";
+			pstmt = con.prepareStatement(sql);
+			pstmt.setDate(1, (Date) novo.getDtInicio());
+			pstmt.setDate(2, (Date) novo.getDtFim());
+			pstmt.setInt(3, novo.getIdCondominio());
+			pstmt.setInt(4, novo.getIdMorador());
+			pstmt.execute();
+			
+			//busca ID gerado para devolver entidade completa
+			sql = "select @@identity as ID";
+			st = con.createStatement();
+			rs = st.executeQuery(sql);
+	        while (rs.next()){
+	        	novo.setIdSindico(rs.getInt("ID"));
+            }
+	        con.commit();
+	        con.setAutoCommit(true);  
+	        con.close();
+	        return novo;
+		} 
+		catch (SQLException e) {
+			if(e.getErrorCode() == 2627)
+				throw new Exception("Não foi possível inserir o registro/ Registro já existe.");
+			throw new Exception(e.getMessage());
+		}
+		catch (Exception e) {
+			throw new Exception(e.getMessage());
+		}
+		finally{
+			con.close();
+		}
+	}
+	
+	public void alterar(Integer id, Sindico sindico) throws Exception
+	{
+		try {
+			//abre conexao com o banco
+		    con = this.abreConexao();
+
+		    String sql = "UPDATE SINDICO SET /n/r"+
+							" DT_INICIO = ?, DT_FIM	 = ?, ID_CONDOMINIO = ?, ID_MORADOR = ? /n/r"+
+							" WHERE ID_SINDICO = ?";
+			pstmt = con.prepareStatement(sql);
+			pstmt.setDate(1, (Date) sindico.getDtInicio());
+			pstmt.setDate(2, (Date) sindico.getDtFim());
+			pstmt.setInt(3, sindico.getIdCondominio());
+			pstmt.setInt(4, sindico.getIdMorador());
+			pstmt.setInt(5, id);
+			pstmt.execute();
+			
+	        con.close();
+		} 
+		catch (SQLException e) {
+			throw new Exception(e.getMessage());
+		}
+		catch (Exception e) {
+			throw new Exception(e.getMessage());
+		}
+		finally{
+			con.close();
+		}
+	}
+	
+	public void remover(Integer id) throws Exception {
+		try {
+			//abre conexao com o banco
+		    con = this.abreConexao();
+
+		    String sql = "DELETE FROM SINDICO WHERE ID_SINDICO = ?";
+			pstmt = con.prepareStatement(sql);
+			pstmt.setInt(1, id);
+			pstmt.execute();
+			
+	        con.close();
+		} 
+		catch (SQLException e) {
+			throw new Exception(e.getMessage());
+		}
+		catch (Exception e) {
+			throw new Exception(e.getMessage());
+		}
+		finally{
+			con.close();
+		}
+	}
+	
+	public Sindico obter(Integer id) throws Exception {
+		try {
+			con = this.abreConexao();
+			
+			Sindico retorno = new Sindico();
+			
+			if (id == null)
+				throw new Exception("Informe o ID para obter os dados.");
+			
+			String sql = "SELECT * FROM SINDICO WHERE ID_SINDICO = ?";
+			pstmt = con.prepareStatement(sql);
+			pstmt.setInt(1, id);
+			rs = pstmt.executeQuery();
+
+			if (rs.getFetchSize() > 0 ) {
+				rs.next();
+				retorno = new Sindico(rs.getInt("ID_SINDICO"), rs.getDate("DT_INICIO"),
+						rs.getDate("DT_FIM"), rs.getInt("ID_CONDOMINIO"), rs.getInt("ID_MORADOR"));
+			}
+			return retorno;
+		} 
+		catch (SQLException e) {
+			throw new Exception(e.getMessage());
+		} 
+		catch (Exception e) {
+			throw new Exception(e.getMessage());
+		} finally {
+			con.close();
+		}
+	}
+	
+	public Sindico obter(Date data, Integer idConcominio) throws Exception {
+		try {
+			con = this.abreConexao();
+			
+			Sindico retorno = new Sindico();
+			
+			if (idConcominio == null && data==null)
+				throw new Exception("Informe o Condominio e a Data para obter os dados.");
+			
+			String sql = "SELECT * FROM SINDICO WHERE ID_CONDOMINIO = ? AND DT_INICIO <= ? "
+					+ " AND DT_FIM >= ?";
+			pstmt = con.prepareStatement(sql);
+			pstmt.setInt(1, idConcominio);
+			pstmt.setDate(2, data);
+			pstmt.setDate(3, data);
+			rs = pstmt.executeQuery();
+
+			if (rs.getFetchSize() > 0 ) {
+				rs.next();
+				retorno = new Sindico(rs.getInt("ID_SINDICO"), rs.getDate("DT_INICIO"),
+						rs.getDate("DT_FIM"), rs.getInt("ID_CONDOMINIO"), rs.getInt("ID_MORADOR"));
+			}
+			return retorno;
+		} 
+		catch (SQLException e) {
+			throw new Exception(e.getMessage());
+		} 
+		catch (Exception e) {
+			throw new Exception(e.getMessage());
+		} finally {
+			con.close();
+		}
+	}
+	
+	public Sindico[] listar(Integer idCondominio, Date dtInicio, Date dtFim) throws Exception {
+		try {
+			con = this.abreConexao();
+			
+			List<Sindico> lista = new ArrayList<Sindico>();
+			
+			String sql = "SELECT * FROM SINDICO WHERE 1 = 1 ";
+			if(idCondominio != null)
+				sql+= " AND ID_CONDOMINIO = " + idCondominio;
+			if(dtInicio != null)
+				sql+= " AND DT_INICIO = '" + dtInicio + "' ";
+			if(dtFim != null)
+				sql+= " AND DT_FIM = '" + dtFim + "' ";
+			
+			pstmt = con.prepareStatement(sql);
+
+			rs = pstmt.executeQuery();
+			while (rs.next()) {
+				lista.add(new Sindico(rs.getInt("ID_SINDICO"), rs.getDate("DT_INICIO"),
+						rs.getDate("DT_FIM"), rs.getInt("ID_CONDOMINIO"), rs.getInt("ID_MORADOR"))); 
+			}
+			Sindico[] retorno =  lista.toArray(new Sindico[0]);
+			return retorno;
+		}
+		catch (SQLException e) {
+			throw new Exception(e.getMessage());
+		}
+		catch (Exception e) {
+			throw new Exception(e.getMessage());
+		} 
+		finally {
+			con.close();
+		}
+	}
+	
+}

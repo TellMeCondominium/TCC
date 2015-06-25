@@ -1,0 +1,194 @@
+package data.dao;
+
+import java.math.BigDecimal;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
+
+import util.Conection;
+import data.model.Dependencia;
+
+public class ServicoDependenciaDAOImpl extends Conection implements ServicoDependenciaDAO {
+
+	 PreparedStatement pstmt;
+	 Statement st;
+	 ResultSet rs;
+	 Connection con;
+
+	public Dependencia inserir(Dependencia novo) throws Exception {
+		try {
+			//abre conexao com o banco
+		    con = this.abreConexao();
+		    con.setAutoCommit(false);  
+		    //insere o registro
+			String sql = "INSERT INTO DEPENDENCIA VALUES (?, ?, ?, ?, ?, ?)";
+			pstmt = con.prepareStatement(sql);
+			pstmt.setString(1, novo.getNomeDependencia());
+			pstmt.setString(2, novo.getDisponivel());
+			pstmt.setInt(3, novo.getCapacidade());
+			pstmt.setBigDecimal(4, novo.getCustoAdicional());
+			pstmt.setString(5, novo.getRegrasUso());
+			pstmt.setInt(6, novo.getIdCondominio());
+			pstmt.execute();
+			
+			//busca ID gerado para devolver entidade completa
+			sql = "select @@identity as ID";
+			st = con.createStatement();
+			rs = st.executeQuery(sql);
+	        while (rs.next()){
+	        	novo.setIdDependencia(rs.getInt("ID"));
+            }
+	        con.commit();
+	        con.setAutoCommit(true);  
+	        con.close();
+	        return novo;
+		} 
+		catch (SQLException e) {
+			if(e.getErrorCode() == 2627)
+				throw new Exception("Não foi possível inserir o registro/ Registro já existe.");
+			throw new Exception(e.getMessage());
+		}
+		catch (Exception e) {
+			throw new Exception(e.getMessage());
+		}
+		finally{
+			con.close();
+		}
+	}
+	
+	public void alterar(Integer id, Dependencia dependencia) throws Exception
+	{
+		try {
+			//abre conexao com o banco
+		    con = this.abreConexao();
+
+		    String sql = "UPDATE DEPENDENCIA SET NOME_DEPENDENCIA = ?, DISPONIVEL = ?, /n/r "+
+							" CAPACIDADE = ?, CUSTO_ADICIONAL = ?, REGRAS_USO = ?, ID_CONDOMINIO =? /n/r "+
+							" WHERE ID_DEPENDENCIA = ?";
+			pstmt = con.prepareStatement(sql);
+			pstmt.setString(1, dependencia.getNomeDependencia());
+			pstmt.setString(2, dependencia.getDisponivel());
+			pstmt.setInt(3, dependencia.getCapacidade());
+			pstmt.setBigDecimal(4, dependencia.getCustoAdicional());
+			pstmt.setString(5, dependencia.getRegrasUso());
+			pstmt.setInt(6, dependencia.getIdCondominio());
+			pstmt.setInt(7, id);
+			pstmt.execute();
+			
+	        con.close();
+		} 
+		catch (SQLException e) {
+			throw new Exception(e.getMessage());
+		}
+		catch (Exception e) {
+			throw new Exception(e.getMessage());
+		}
+		finally{
+			con.close();
+		}
+	}
+	
+	public void remover(Integer id) throws Exception {
+		try {
+			//abre conexao com o banco
+		    con = this.abreConexao();
+
+		    String sql = "DELETE FROM DEPENDENCIA WHERE ID_DEPENDENCIA = ?";
+			pstmt = con.prepareStatement(sql);
+			pstmt.setInt(1, id);
+			pstmt.execute();
+			
+	        con.close();
+		} 
+		catch (SQLException e) {
+			throw new Exception(e.getMessage());
+		}
+		catch (Exception e) {
+			throw new Exception(e.getMessage());
+		}
+		finally{
+			con.close();
+		}
+	}
+	
+	public Dependencia obter(Integer id) throws Exception {
+		try {
+			con = this.abreConexao();
+			
+			Dependencia retorno = new Dependencia();
+			
+			if (id == null )
+				throw new Exception("Informe o ID para obter a Dependencia");
+			
+			String sql = "SELECT * FROM DEPENDENCIA WHERE ID_DEPENDENCIA = ?";
+			pstmt = con.prepareStatement(sql);
+			pstmt.setInt(1, id);
+
+			rs = pstmt.executeQuery();
+
+			if (rs.getFetchSize() > 0 ) {
+				rs.next();
+				retorno = new Dependencia(rs.getInt("ID_DEPENDENCIA"), rs.getString("NOME_DEPENDENCIA"), rs.getString("DISPONIVEL"),
+						rs.getInt("CAPACIDADE"), rs.getBigDecimal("CUSTO_ADICIONAL"), rs.getString("REGRAS_USO"), rs.getInt("ID_CONDOMINIO"));
+			}
+			return retorno;
+		} 
+		catch (SQLException e) {
+			throw new Exception(e.getMessage());
+		} 
+		catch (Exception e) {
+			throw new Exception(e.getMessage());
+		} finally {
+			con.close();
+		}
+	}
+	
+	public Dependencia[] listar(Integer id, String nome, String disponivel, Integer capacidade,
+			BigDecimal custoAdicional, String regrasUso, Integer idCondominio) throws Exception {
+		try {
+			con = this.abreConexao();
+			
+			List<Dependencia> lista = new ArrayList<Dependencia>();
+			
+			String sql = "SELECT * FROM DEPENDENCIA WHERE 1 = 1 ";
+			if(id != null)
+				sql+= " AND ID_DEPENDENCIA = " + id;
+			if(nome != null && nome != "")
+				sql+= " AND NOME_DEPENDENCIA = '" + nome + "' ";
+			if(disponivel != null && disponivel != "")
+				sql+= " AND DISPONIVEL = '" + disponivel + "' ";
+			if(capacidade != null)
+				sql+= " AND CAPACIDADE = " + capacidade;
+			if(custoAdicional != null)
+				sql+= " AND CUSTO_ADICIONAL = " + custoAdicional;
+			if(regrasUso != null && regrasUso != "")
+				sql+= " AND REGRAS_USO = '" + regrasUso + "' ";
+			if(idCondominio != null)
+				sql+= " ID_CONDOMINIO = " + idCondominio;
+			
+			pstmt = con.prepareStatement(sql);
+
+			rs = pstmt.executeQuery();
+			while (rs.next()) {
+				lista.add(new Dependencia(rs.getInt("ID_DEPENDENCIA"), rs.getString("NOME_DEPENDENCIA"), rs.getString("DISPONIVEL"),
+						rs.getInt("CAPACIDADE"), rs.getBigDecimal("CUSTO_ADICIONAL"), rs.getString("REGRAS_USO"), rs.getInt("ID_CONDOMINIO"))); 
+			}
+			Dependencia[] retorno =  lista.toArray(new Dependencia[0]);
+			return retorno;
+		}
+		catch (SQLException e) {
+			throw new Exception(e.getMessage());
+		}
+		catch (Exception e) {
+			throw new Exception(e.getMessage());
+		} 
+		finally {
+			con.close();
+		}
+	}
+
+}

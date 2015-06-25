@@ -1,0 +1,176 @@
+package data.dao;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
+
+import util.Conection;
+import data.model.Funcionario;
+
+public class ServicoFuncionarioDAOImpl extends Conection implements ServicoFuncionarioDAO {
+
+	 PreparedStatement pstmt;
+	 Statement st;
+	 ResultSet rs;
+	 Connection con;
+
+	public Funcionario inserir(Funcionario novo) throws Exception {
+		try {
+			//abre conexao com o banco
+		    con = this.abreConexao();
+		    con.setAutoCommit(false);  
+		    //insere o registro
+			String sql = "INSERT INTO FUNCIONARIO VALUES(?, ?)";
+			pstmt = con.prepareStatement(sql);
+			pstmt.setInt(1, novo.getIdEmpresaPrestadora());
+			pstmt.setString(2, novo.getNomeFuncionario());
+			pstmt.execute();
+			
+			//busca ID gerado para devolver entidade completa
+			sql = "select @@identity as ID";
+			st = con.createStatement();
+			rs = st.executeQuery(sql);
+	        while (rs.next()){
+	        	novo.setIdFuncionario(rs.getInt("ID"));
+            }
+	        con.commit();
+	        con.setAutoCommit(true);  
+	        con.close();
+	        return novo;
+		} 
+		catch (SQLException e) {
+			if(e.getErrorCode() == 2627)
+				throw new Exception("Não foi possível inserir o registro/ Registro já existe.");
+			throw new Exception(e.getMessage());
+		}
+		catch (Exception e) {
+			throw new Exception(e.getMessage());
+		}
+		finally{
+			con.close();
+		}
+	}
+	
+	public void alterar(Integer id, Funcionario funcionario) throws Exception
+	{
+		try {
+			//abre conexao com o banco
+		    con = this.abreConexao();
+
+		    String sql = "UPDATE FUNCIONARIO SET /n/r"+
+							" ID_PRESTADOR = ?, NOME_FUNCIONARIO = ? /n/r"+
+							" WHERE ID_FUNCIONARIO = ?";
+			pstmt = con.prepareStatement(sql);
+			pstmt.setInt(1, funcionario.getIdEmpresaPrestadora());
+			pstmt.setString(2, funcionario.getNomeFuncionario());
+			pstmt.setInt(3, id);
+			pstmt.execute();
+			
+	        con.close();
+		} 
+		catch (SQLException e) {
+			throw new Exception(e.getMessage());
+		}
+		catch (Exception e) {
+			throw new Exception(e.getMessage());
+		}
+		finally{
+			con.close();
+		}
+	}
+	
+	public void remover(Integer id) throws Exception {
+		try {
+			//abre conexao com o banco
+		    con = this.abreConexao();
+
+		    String sql = "DELETE FROM FUNCIONARIO WHERE ID_FUNCIONARIO = ?";
+			pstmt = con.prepareStatement(sql);
+			pstmt.setInt(1, id);
+			pstmt.execute();
+			
+	        con.close();
+		} 
+		catch (SQLException e) {
+			throw new Exception(e.getMessage());
+		}
+		catch (Exception e) {
+			throw new Exception(e.getMessage());
+		}
+		finally{
+			con.close();
+		}
+	}
+	
+	public Funcionario obter(Integer id) throws Exception {
+		try {
+			con = this.abreConexao();
+			
+			Funcionario retorno = new Funcionario();
+			
+			if (id == null )
+				throw new Exception("Informe o ID para obter os dados.");
+			
+			String sql = "SELECT * FROM FUNCIONARIO WHERE ID_FUNCIONARIO = ?";
+			pstmt = con.prepareStatement(sql);
+			pstmt.setInt(1, id);
+
+			rs = pstmt.executeQuery();
+
+			if (rs.getFetchSize() > 0 ) {
+				rs.next();
+				retorno = new Funcionario(rs.getInt("ID_FUNCIONARIO"), 
+						rs.getInt("ID_PRESTADOR"), rs.getString("NOME_FUNCIONARIO"));
+			}
+			return retorno;
+		} 
+		catch (SQLException e) {
+			throw new Exception(e.getMessage());
+		} 
+		catch (Exception e) {
+			throw new Exception(e.getMessage());
+		} finally {
+			con.close();
+		}
+	}
+	
+	public Funcionario[] listar(Integer id, Integer idEmpresa, String nome) throws Exception {
+		try {
+			con = this.abreConexao();
+			
+			List<Funcionario> lista = new ArrayList<Funcionario>();
+			
+			String sql = "SELECT * FROM FUNCIONARIO WHERE 1 = 1 ";
+			if(id != null)
+				sql+= " AND ID_FUNCIONARIO = " + id;
+			if(idEmpresa != null)
+				sql+= " AND ID_PRESTADOR = " + idEmpresa;
+			if(nome != null && nome != "")
+				sql+= " AND NOME_FUNCIONARIO = '" + nome + "' ";
+			
+			pstmt = con.prepareStatement(sql);
+
+			rs = pstmt.executeQuery();
+			while (rs.next()) {
+				lista.add(new Funcionario(rs.getInt("ID_FUNCIONARIO"), 
+						rs.getInt("ID_PRESTADOR"), rs.getString("NOME_FUNCIONARIO"))); 
+			}
+			Funcionario[] retorno =  lista.toArray(new Funcionario[0]);
+			return retorno;
+		}
+		catch (SQLException e) {
+			throw new Exception(e.getMessage());
+		}
+		catch (Exception e) {
+			throw new Exception(e.getMessage());
+		} 
+		finally {
+			con.close();
+		}
+	}
+
+}

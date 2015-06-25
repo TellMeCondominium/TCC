@@ -1,0 +1,181 @@
+package data.dao;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
+
+import util.Conection;
+import data.model.DisponibilidadeDependencia;
+
+public class ServicoDisponibilidadeDependenciaDAOImpl extends Conection implements ServicoDisponibilidadeDependenciaDAO {
+
+	 PreparedStatement pstmt;
+	 Statement st;
+	 ResultSet rs;
+	 Connection con;
+
+	public DisponibilidadeDependencia inserir(DisponibilidadeDependencia novo) throws Exception {
+		try {
+			//abre conexao com o banco
+		    con = this.abreConexao();
+		    con.setAutoCommit(false);  
+		    //insere o registro
+			String sql = "INSERT INTO DISPONIBILIDADE_DEPENDENCIA VALUES(?, ?, ?)";
+			pstmt = con.prepareStatement(sql);
+			pstmt.setString(1, novo.getDiaSemana());
+			pstmt.setString(2, novo.getPeriodo());
+			pstmt.setInt(3, novo.getIdDependencia());
+			pstmt.execute();
+			
+			//busca ID gerado para devolver entidade completa
+			sql = "select @@identity as ID";
+			st = con.createStatement();
+			rs = st.executeQuery(sql);
+	        while (rs.next()){
+	        	novo.setIdDisponibilidadeDependencia(rs.getInt("ID"));
+            }
+	        con.commit();
+	        con.setAutoCommit(true);  
+	        con.close();
+	        return novo;
+		} 
+		catch (SQLException e) {
+			if(e.getErrorCode() == 2627)
+				throw new Exception("Não foi possível inserir o registro/ Registro já existe.");
+			throw new Exception(e.getMessage());
+		}
+		catch (Exception e) {
+			throw new Exception(e.getMessage());
+		}
+		finally{
+			con.close();
+		}
+	}
+	
+	public void alterar(Integer id, DisponibilidadeDependencia disponibilidadeDependencia) throws Exception
+	{
+		try {
+			//abre conexao com o banco
+		    con = this.abreConexao();
+
+		    String sql = "UPDATE DISPONIBILIDADE_DEPENDENCIA SET /n/r"+
+							" DIA_SEMANA = ?, PERIODO = ?, ID_DEPENDENCIA = ? /n/r"+
+							" WHERE ID_DISPONIBILIDADE_DEPENDENCIA = ?";
+			pstmt = con.prepareStatement(sql);
+			pstmt.setString(1, disponibilidadeDependencia.getDiaSemana());
+			pstmt.setString(2, disponibilidadeDependencia.getPeriodo());
+			pstmt.setInt(3, disponibilidadeDependencia.getIdDependencia());
+			pstmt.setInt(4, id);
+			pstmt.execute();
+			
+	        con.close();
+		} 
+		catch (SQLException e) {
+			throw new Exception(e.getMessage());
+		}
+		catch (Exception e) {
+			throw new Exception(e.getMessage());
+		}
+		finally{
+			con.close();
+		}
+	}
+	
+	public void remover(Integer id) throws Exception {
+		try {
+			//abre conexao com o banco
+		    con = this.abreConexao();
+
+		    String sql = "DELETE FROM DISPONIBILIDADE_DEPENDENCIA WHERE ID_DISPONIBILIDADE_DEPENDENCIA = ?";
+			pstmt = con.prepareStatement(sql);
+			pstmt.setInt(1, id);
+			pstmt.execute();
+			
+	        con.close();
+		} 
+		catch (SQLException e) {
+			throw new Exception(e.getMessage());
+		}
+		catch (Exception e) {
+			throw new Exception(e.getMessage());
+		}
+		finally{
+			con.close();
+		}
+	}
+	
+	public DisponibilidadeDependencia obter(Integer id) throws Exception {
+		try {
+			con = this.abreConexao();
+			
+			DisponibilidadeDependencia retorno = new DisponibilidadeDependencia();
+			
+			if (id == null )
+				throw new Exception("Informe o ID para obter os dados.");
+			
+			String sql = "SELECT * FROM DISPONIBILIDADE_DEPENDENCIA WHERE ID_DISPONIBILIDADE_DEPENDENCIA = ?";
+			pstmt = con.prepareStatement(sql);
+			pstmt.setInt(1, id);
+
+			rs = pstmt.executeQuery();
+
+			if (rs.getFetchSize() > 0 ) {
+				rs.next();
+				retorno = new DisponibilidadeDependencia(rs.getInt("ID_DISPONIBILIDADE_DEPENDENCIA"), 
+						rs.getInt("ID_DEPENDENCIA"), rs.getString("DIA_SEMANA"),rs.getString("PERIODO"));
+			}
+			return retorno;
+		} 
+		catch (SQLException e) {
+			throw new Exception(e.getMessage());
+		} 
+		catch (Exception e) {
+			throw new Exception(e.getMessage());
+		} finally {
+			con.close();
+		}
+	}
+	
+	public DisponibilidadeDependencia[] listar(Integer id, String diaSemana, String periodo, 
+			Integer idDependencia) throws Exception {
+		try {
+			con = this.abreConexao();
+			
+			List<DisponibilidadeDependencia> lista = new ArrayList<DisponibilidadeDependencia>();
+			
+			String sql = "SELECT * FROM DISPONIBILIDADE_DEPENDENCIA WHERE 1 = 1 ";
+			if(id != null)
+				sql+= " AND ID_DISPONIBILIDADE_DEPENDENCIA = " + id;
+			if(diaSemana != null && diaSemana != "")
+				sql+= " AND DIA_SEMANA = '" + diaSemana + "' ";
+			if(periodo != null && periodo != "")
+				sql+= " AND PERIODO = '" + periodo + "' ";
+			if(idDependencia != null)
+				sql+= " AND ID_DEPENDENCIA = " + idDependencia;
+			
+			pstmt = con.prepareStatement(sql);
+
+			rs = pstmt.executeQuery();
+			while (rs.next()) {
+				lista.add(new DisponibilidadeDependencia(rs.getInt("ID_DISPONIBILIDADE_DEPENDENCIA"), 
+						rs.getInt("ID_DEPENDENCIA"), rs.getString("DIA_SEMANA"),rs.getString("PERIODO"))); 
+			}
+			DisponibilidadeDependencia[] retorno =  lista.toArray(new DisponibilidadeDependencia[0]);
+			return retorno;
+		}
+		catch (SQLException e) {
+			throw new Exception(e.getMessage());
+		}
+		catch (Exception e) {
+			throw new Exception(e.getMessage());
+		} 
+		finally {
+			con.close();
+		}
+	}
+
+}

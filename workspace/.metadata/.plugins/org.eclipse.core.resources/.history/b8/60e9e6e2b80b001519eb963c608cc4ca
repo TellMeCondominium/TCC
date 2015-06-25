@@ -1,0 +1,208 @@
+package data.dao;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
+
+import util.Conection;
+import data.model.StatusSolicitacao;
+
+public class ServicoStatusSolicitacaoDAOImpl extends Conection implements ServicoStatusSolicitacaoDAO {
+
+	 PreparedStatement pstmt;
+	 Statement st;
+	 ResultSet rs;
+	 Connection con;
+
+	public StatusSolicitacao inserir(StatusSolicitacao novo) throws Exception {
+		try {
+			//abre conexao com o banco
+		    con = this.abreConexao();
+		    con.setAutoCommit(false);  
+		    //insere o registro
+			String sql = "insert into STATUS_SOLICITACAO values(?, ?)";
+			pstmt = con.prepareStatement(sql);
+			pstmt.setString(1, novo.getDescricao());
+			pstmt.setInt(2, novo.getOrdem());
+			pstmt.execute();
+			
+			//busca ID gerado para devolver entidade completa
+			sql = "select @@identity as ID";
+			st = con.createStatement();
+			rs = st.executeQuery(sql);
+	        while (rs.next()){
+	        	novo.setIdStatus(rs.getInt("ID"));
+            }
+	        con.commit();
+	        con.setAutoCommit(true);  
+	        con.close();
+	        return novo;
+		} 
+		catch (SQLException e) {
+			if(e.getErrorCode() == 2627)
+				throw new Exception("Não foi possível inserir o registro/ Registro já existe.");
+			throw new Exception(e.getMessage());
+		}
+		catch (Exception e) {
+			throw new Exception(e.getMessage());
+		}
+		finally{
+			con.close();
+		}
+	}
+	
+	public void alterar(Integer id,StatusSolicitacao statusSolicitacao) throws Exception
+	{
+		try {
+			//abre conexao com o banco
+		    con = this.abreConexao();
+		    StatusSolicitacao verifica = this.obter(statusSolicitacao.getDescricao());
+		    if(verifica.getDescricao() != null)
+		    	throw new Exception("Já existe um Status de Solicitacao com o nome informado.");
+		    String sql = "update STATUS_SOLICITACAO set DESCRICAO = ?, ORDEM = ? where ID_STATUS = ?";
+			pstmt = con.prepareStatement(sql);
+			pstmt.setString(1, statusSolicitacao.getDescricao());
+			pstmt.setInt(2, statusSolicitacao.getOrdem());
+			pstmt.setInt(2, id);
+			pstmt.execute();
+			
+	        con.close();
+		} 
+		catch (SQLException e) {
+			throw new Exception(e.getMessage());
+		}
+		catch (Exception e) {
+			throw new Exception(e.getMessage());
+		}
+		finally{
+			con.close();
+		}
+	}
+	
+	public void remover(Integer idStatusSolicitacao) throws Exception {
+		try {
+			//abre conexao com o banco
+		    con = this.abreConexao();
+
+		    String sql = "delete from STATUS_SOLICITACAO where ID_STATUS = ?";
+			pstmt = con.prepareStatement(sql);
+			pstmt.setInt(1, idStatusSolicitacao);
+			pstmt.execute();
+			
+	        con.close();
+		} 
+		catch (SQLException e) {
+			throw new Exception(e.getMessage());
+		}
+		catch (Exception e) {
+			throw new Exception(e.getMessage());
+		}
+		finally{
+			con.close();
+		}
+	}
+	
+	public StatusSolicitacao obter(Integer id) throws Exception {
+		try {
+			con = this.abreConexao();
+			
+			StatusSolicitacao retorno = new StatusSolicitacao();
+			
+			if (id == null )
+				throw new Exception("Informe o ID para obter o Status da Solicitacao");
+			
+			String sql = "SELECT * FROM STATUS_SOLICITACAO WHERE ID_STATUS = ?";
+			pstmt = con.prepareStatement(sql);
+			pstmt.setInt(1, id);
+
+			rs = pstmt.executeQuery();
+
+			if (rs.getFetchSize() > 0 ) {
+				rs.next();
+				retorno = new StatusSolicitacao(rs.getInt("ID_STATUS"), 
+						rs.getString("DESCRICAO"), rs.getInt("ORDEM"));
+			}
+			return retorno;
+		} 
+		catch (SQLException e) {
+			throw new Exception(e.getMessage());
+		} 
+		catch (Exception e) {
+			throw new Exception(e.getMessage());
+		} finally {
+			con.close();
+		}
+	}
+	
+	public StatusSolicitacao obter(String descricao) throws Exception {
+		try {
+			con = this.abreConexao();
+			
+			StatusSolicitacao retorno = new StatusSolicitacao();
+			
+			if (descricao == null || descricao == "")
+				throw new Exception("Informe a descrição para obter o StatusSolicitacao");
+			
+			String sql = "SELECT * FROM STATUS_SOLICITACAO WHERE DESCRICAO = ?";
+			pstmt = con.prepareStatement(sql);
+			pstmt.setString(1,  descricao);
+
+			rs = pstmt.executeQuery();
+
+			if (rs.getFetchSize() > 0 ) {
+				rs.next();
+				retorno = new StatusSolicitacao(rs.getInt("ID_STATUS"), 
+						rs.getString("DESCRICAO"), rs.getInt("ORDEM"));
+			}
+			return retorno;
+			
+		} 
+		catch (SQLException e) {
+			throw new Exception(e.getMessage());
+		} 
+		catch (Exception e) {
+			throw new Exception(e.getMessage());
+		} 
+		finally {
+			con.close();
+		}
+	}
+	
+	public StatusSolicitacao[] listar(Integer ordem) throws Exception {
+		try {
+			con = this.abreConexao();
+			
+			List<StatusSolicitacao> listaItens = new ArrayList<StatusSolicitacao>();
+			
+			
+			String sql = "SELECT * FROM STATUS_SOLICITACAO WHERE 1 = 1 ";
+			if(ordem !=null)
+				sql+= "AND ORDEM = " + ordem;
+			
+			sql+= "ORDER BY ID_STATUS";
+			pstmt = con.prepareStatement(sql);
+
+			rs = pstmt.executeQuery();
+			while (rs.next()) {
+				listaItens.add(new StatusSolicitacao(rs.getInt("ID_STATUS"), 
+						rs.getString("DESCRICAO"), rs.getInt("ORDEM"))); 
+			}
+			StatusSolicitacao[] retorno =  listaItens.toArray(new StatusSolicitacao[0]);
+			return retorno;
+		}
+		catch (SQLException e) {
+			throw new Exception(e.getMessage());
+		}
+		catch (Exception e) {
+			throw new Exception(e.getMessage());
+		} 
+		finally {
+			con.close();
+		}
+		
+	}
+}

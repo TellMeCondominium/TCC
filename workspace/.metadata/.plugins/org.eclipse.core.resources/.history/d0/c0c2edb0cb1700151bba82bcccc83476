@@ -1,0 +1,32 @@
+package dao;
+
+import model.Fabricante;
+import factory.PersistenceFactory;
+
+public class ServicoFabricanteDAOImpl {
+
+	public void inserir(Fabricante novo) {
+		try {
+			PersistenceFactory.incluir(novo);
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+	}
+	
+	public void alterar(Fabricante novo) {
+		try {
+			PersistenceFactory.alterar(novo);
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+	}
+	
+	public void remover(Fabricante novo) {
+		try {
+			PersistenceFactory.remover(novo);
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+	}
+
+}

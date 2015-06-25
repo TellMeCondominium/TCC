@@ -1,0 +1,23 @@
+package factory;
+
+
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.Persistence;
+
+import model.Fabricante;
+
+public class AdiconaTarefa {
+
+	public static void main(String[] args) {
+		EntityManagerFactory factory = Persistence.createEntityManagerFactory("TCM");
+	    EntityManager manager = factory.createEntityManager();
+		Fabricante f = manager.find(Fabricante.class, 9);
+		System.out.println("Id: " +f.getId());
+		System.out.println("Desc: " +f.getDescricao());
+		manager.close();
+		
+		PersistenceFactory.remover(f);
+	}
+
+}

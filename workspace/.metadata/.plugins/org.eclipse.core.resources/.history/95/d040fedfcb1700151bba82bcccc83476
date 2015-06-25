@@ -1,0 +1,30 @@
+package factory;
+
+import java.util.List;
+
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.Persistence;
+import javax.persistence.Query;
+
+import model.Fabricante;
+import model.Produto;
+
+public class AdiconaTarefa {
+
+	public static void main(String[] args) {
+		
+		List<Fabricante> fabricantes = AdiconaTarefa.listar();
+		for (Fabricante fabricante : fabricantes) {
+			System.out.println("Fabricante");
+			System.out.println("ID: " + fabricante.getId());
+			System.out.println("Descrição: " + fabricante.getDescricao());
+			for(Produto prod : fabricante.getProdutos()){
+				System.out.println("Produto");
+				System.out.println("ID: " + prod.getId());
+				System.out.println("Descrição: " + prod.getDescricao());
+			}
+		}
+	}
+
+}

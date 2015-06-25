@@ -1,0 +1,53 @@
+package factory;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.Persistence;
+import javax.persistence.Query;
+
+import model.Fabricante;
+
+public class AdiconaTarefa {
+
+	public static void main(String[] args) {
+		Fabricante fab = AdiconaTarefa.obterPorId(1);
+		System.out.println("Fabricante");
+		System.out.println("ID: " + fab.getId());
+		System.out.println("Descrição: " + fab.getDescricao());
+		
+		List<Fabricante> fabricantes = AdiconaTarefa.listar();
+		for (Fabricante fabricante : fabricantes) {
+			System.out.println("Fabricante");
+			System.out.println("ID: " + fabricante.getId());
+			System.out.println("Descrição: " + fabricante.getDescricao());
+		}
+	}
+
+	private static Fabricante obterPorId(int id) {
+		EntityManagerFactory factory = Persistence
+				.createEntityManagerFactory("TCM");
+		EntityManager manager = factory.createEntityManager();
+		return manager.find(Fabricante.class, id);
+	}
+
+	private static List<Fabricante> listar() {
+		try {
+			EntityManagerFactory factory = Persistence
+					.createEntityManagerFactory("TCM");
+			EntityManager manager = factory.createEntityManager();
+			Query query = manager
+				    .createQuery("select * from Fabricante where 1=  :um");
+				query.setParameter("um", 1);
+			return query.getResultList();
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new ArrayList<Fabricante>();
+		}
+		
+	}
+
+}

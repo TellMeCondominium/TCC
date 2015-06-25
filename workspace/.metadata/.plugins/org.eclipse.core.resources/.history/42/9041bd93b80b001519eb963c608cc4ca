@@ -1,0 +1,198 @@
+package data.dao;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
+
+import util.Conection;
+import data.model.CategoriaPrestador;
+
+public class ServicoCategoriaPrestadorDAOImpl extends Conection implements ServicoCategoriaPrestadorDAO {
+
+	 PreparedStatement pstmt;
+	 Statement st;
+	 ResultSet rs;
+	 Connection con;
+
+	public CategoriaPrestador inserir(CategoriaPrestador novo) throws Exception {
+		try {
+			//abre conexao com o banco
+		    con = this.abreConexao();
+		    con.setAutoCommit(false);  
+		    //insere o registro
+			String sql = "insert into CATEGORIA_PRESTADOR values(?)";
+			pstmt = con.prepareStatement(sql);
+			pstmt.setString(1, novo.getDescricaoCategoria());
+			pstmt.execute();
+			
+			//busca ID gerado para devolver entidade completa
+			sql = "select @@identity as ID";
+			st = con.createStatement();
+			rs = st.executeQuery(sql);
+	        while (rs.next()){
+	        	novo.setIdCategoria(rs.getInt("ID"));
+            }
+	        con.commit();
+	        con.setAutoCommit(true);  
+	        con.close();
+	        return novo;
+		} 
+		catch (SQLException e) {
+			if(e.getErrorCode() == 2627)
+				throw new Exception("Não foi possível inserir o registro/ Registro já existe.");
+			throw new Exception(e.getMessage());
+		}
+		catch (Exception e) {
+			throw new Exception(e.getMessage());
+		}
+		finally{
+			con.close();
+		}
+	}
+	
+	public void alterar(Integer id,CategoriaPrestador categoriaPrestador) throws Exception
+	{
+		try {
+			//abre conexao com o banco
+		    con = this.abreConexao();
+		    CategoriaPrestador verifica = this.obter(categoriaPrestador.getDescricaoCategoria());
+		    if(verifica.getDescricaoCategoria() != null)
+		    	throw new Exception("Já existe um Categoria com o nome informado.");
+		    String sql = "UPDATE CATEGORIA_PRESTADOR SET DESCRICAO_CATEGORIA = ? WHERE ID_CATEGORIA = ?";
+			pstmt = con.prepareStatement(sql);
+			pstmt.setString(1, categoriaPrestador.getDescricaoCategoria());
+			pstmt.setInt(2, id);
+			pstmt.execute();
+			
+	        con.close();
+		} 
+		catch (SQLException e) {
+			throw new Exception(e.getMessage());
+		}
+		catch (Exception e) {
+			throw new Exception(e.getMessage());
+		}
+		finally{
+			con.close();
+		}
+	}
+	
+	public void remover(Integer id) throws Exception {
+		try {
+			//abre conexao com o banco
+		    con = this.abreConexao();
+
+		    String sql = "DELETE FROM CATEGORIA_PRESTADOR WHERE ID_CATEGORIA = ?";
+			pstmt = con.prepareStatement(sql);
+			pstmt.setInt(1, id);
+			pstmt.execute();
+			
+	        con.close();
+		} 
+		catch (SQLException e) {
+			throw new Exception(e.getMessage());
+		}
+		catch (Exception e) {
+			throw new Exception(e.getMessage());
+		}
+		finally{
+			con.close();
+		}
+	}
+	
+	public CategoriaPrestador obter(Integer id) throws Exception {
+		try {
+			con = this.abreConexao();
+			
+			CategoriaPrestador retorno = new CategoriaPrestador();
+			
+			if (id == null )
+				throw new Exception("Informe o ID para obter a Categoria");
+			
+			String sql = "SELECT * FROM CATEGORIA_PRESTADOR WHERE ID_CATEGORIA = ?";
+			pstmt = con.prepareStatement(sql);
+			pstmt.setInt(1, id);
+
+			rs = pstmt.executeQuery();
+
+			if(rs.next())
+				retorno = new CategoriaPrestador(rs.getInt("ID_CATEGORIA"), rs.getString("DESCRICAO_CATEGORIA"));
+			return retorno;
+		} 
+		catch (SQLException e) {
+			throw new Exception(e.getMessage());
+		} 
+		catch (Exception e) {
+			throw new Exception(e.getMessage());
+		} finally {
+			con.close();
+		}
+	}
+	
+	public CategoriaPrestador obter(String descricao) throws Exception {
+		try {
+			con = this.abreConexao();
+			
+			CategoriaPrestador retorno = new CategoriaPrestador();
+			
+			if (descricao == null || descricao == "")
+				throw new Exception("Informe a descrição para obter a Categoria");
+			
+			String sql = "SELECT * FROM CATEGORIA_PRESTADOR WHERE DESCRICAO_CATEGORIA = ?";
+			pstmt = con.prepareStatement(sql);
+			pstmt.setString(1,  descricao);
+
+			rs = pstmt.executeQuery();
+
+			if (rs.getFetchSize() > 0 ) {
+				rs.next();
+				retorno = new CategoriaPrestador(rs.getInt("ID_CATEGORIA"), rs.getString("DESCRICAO_CATEGORIA"));
+			}
+			return retorno;
+			
+		} 
+		catch (SQLException e) {
+			throw new Exception(e.getMessage());
+		} 
+		catch (Exception e) {
+			throw new Exception(e.getMessage());
+		} 
+		finally {
+			con.close();
+		}
+	}
+	
+	public CategoriaPrestador[] listar() throws Exception {
+		try {
+			con = this.abreConexao();
+			
+			List<CategoriaPrestador> lista = new ArrayList<CategoriaPrestador>();
+			
+			
+			String sql = "SELECT * FROM CATEGORIA_PRESTADOR ORDER BY ID_CATEGORIA";
+			pstmt = con.prepareStatement(sql);
+
+			rs = pstmt.executeQuery();
+			while (rs.next()) {
+				CategoriaPrestador item =  new CategoriaPrestador(rs.getInt("ID_CATEGORIA"), rs.getString("DESCRICAO_CATEGORIA"));
+				lista.add(item); 
+			}
+			CategoriaPrestador[] retorno =  lista.toArray(new CategoriaPrestador[0]);
+			return retorno;
+		}
+		catch (SQLException e) {
+			throw new Exception(e.getMessage());
+		}
+		catch (Exception e) {
+			throw new Exception(e.getMessage());
+		} 
+		finally {
+			con.close();
+		}
+		
+	}
+}

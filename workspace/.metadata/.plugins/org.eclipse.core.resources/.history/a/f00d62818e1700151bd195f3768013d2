@@ -1,0 +1,12 @@
+package factory;
+
+import javax.persistence.EntityManagerFactory;
+
+public class Persistence {
+	public static EntityManagerFactory createEntityManagerFactory(
+			String unitName);
+
+	public static EntityManagerFactory createEntityManagerFactory(
+			String unitName, java.util.Map properties);
+
+}

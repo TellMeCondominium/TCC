@@ -1,0 +1,17 @@
+package factory;
+
+
+import model.Fabricante;
+
+public class AdiconaTarefa {
+
+	public static void main(String[] args) {
+		//inicia a conexao
+		Fabricante f = new Fabricante();
+		f.setId(9);
+		f.setDescricao("Asus");
+		PersistenceFactory.alterar(f);
+		System.out.println("Id: " +f.getId());
+	}
+
+}

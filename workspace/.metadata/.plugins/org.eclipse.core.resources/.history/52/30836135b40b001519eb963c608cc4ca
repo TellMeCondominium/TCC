@@ -1,0 +1,200 @@
+package data.dao;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
+
+import util.Conection;
+import data.model.Item;
+
+public class ServicoItemDAOImpl extends Conection implements ServicoItemDAO {
+
+	 PreparedStatement pstmt;
+	 Statement st;
+	 ResultSet rs;
+	 Connection con;
+
+	public Item inserir(Item novo) throws Exception {
+		try {
+			//abre conexao com o banco
+		    con = this.abreConexao();
+		    con.setAutoCommit(false);  
+		    //insere o registro
+			String sql = "insert into item values(?)";
+			pstmt = con.prepareStatement(sql);
+			pstmt.setString(1, novo.getItemDescricao());
+			pstmt.execute();
+			
+			//busca ID gerado para devolver entidade completa
+			sql = "select @@identity as ID";
+			st = con.createStatement();
+			rs = st.executeQuery(sql);
+	        while (rs.next()){
+	        	novo.setIdItem(rs.getInt("ID"));
+            }
+	        con.commit();
+	        con.setAutoCommit(true);  
+	        con.close();
+	        return novo;
+		} 
+		catch (SQLException e) {
+			if(e.getErrorCode() == 2627)
+				throw new Exception("Não foi possível inserir o registro/ Registro já existe.");
+			throw new Exception(e.getMessage());
+		}
+		catch (Exception e) {
+			throw new Exception(e.getMessage());
+		}
+		finally{
+			con.close();
+		}
+	}
+	
+	public void alterar(Integer idItem,Item item) throws Exception
+	{
+		try {
+			//abre conexao com o banco
+		    con = this.abreConexao();
+		    Item verifica = this.obter(item.getItemDescricao());
+		    if(verifica.getItemDescricao() != null)
+		    	throw new Exception("Já existe um item com o nome informado.");
+		    String sql = "update item set ITEM_DESCRICAO = ? where ID_ITEM = ?";
+			pstmt = con.prepareStatement(sql);
+			pstmt.setString(1, item.getItemDescricao());
+			pstmt.setInt(2, idItem);
+			pstmt.execute();
+			
+	        con.close();
+		} 
+		catch (SQLException e) {
+			throw new Exception(e.getMessage());
+		}
+		catch (Exception e) {
+			throw new Exception(e.getMessage());
+		}
+		finally{
+			con.close();
+		}
+	}
+	
+	public void remover(Integer idItem) throws Exception {
+		try {
+			//abre conexao com o banco
+		    con = this.abreConexao();
+
+		    String sql = "delete from item where ID_ITEM = ?";
+			pstmt = con.prepareStatement(sql);
+			pstmt.setInt(1, idItem);
+			pstmt.execute();
+			
+	        con.close();
+		} 
+		catch (SQLException e) {
+			throw new Exception(e.getMessage());
+		}
+		catch (Exception e) {
+			throw new Exception(e.getMessage());
+		}
+		finally{
+			con.close();
+		}
+	}
+	
+	public Item obter(Integer id) throws Exception {
+		try {
+			con = this.abreConexao();
+			
+			Item retorno = new Item();
+			
+			if (id == null )
+				throw new Exception("Informe o ID para obter o Item");
+			
+			String sql = "SELECT * FROM ITEM WHERE ID_ITEM = ?";
+			pstmt = con.prepareStatement(sql);
+			pstmt.setInt(1, id);
+
+			rs = pstmt.executeQuery();
+
+			if (rs.getFetchSize() > 0 ) {
+				rs.next();
+				retorno = new Item(rs.getInt("ID_ITEM"), rs.getString("ITEM_DESCRICAO"));
+			}
+			return retorno;
+		} 
+		catch (SQLException e) {
+			throw new Exception(e.getMessage());
+		} 
+		catch (Exception e) {
+			throw new Exception(e.getMessage());
+		} finally {
+			con.close();
+		}
+	}
+	
+	public Item obter(String descricao) throws Exception {
+		try {
+			con = this.abreConexao();
+			
+			Item retorno = new Item();
+			
+			if (descricao == null || descricao == "")
+				throw new Exception("Informe a descrição para obter o Item");
+			
+			String sql = "SELECT * FROM ITEM WHERE ITEM_DESCRICAO = ?";
+			pstmt = con.prepareStatement(sql);
+			pstmt.setString(1,  descricao);
+
+			rs = pstmt.executeQuery();
+
+			if (rs.getFetchSize() > 0 ) {
+				rs.next();
+				retorno = new Item(rs.getInt("ID_ITEM"), rs.getString("ITEM_DESCRICAO"));
+			}
+			return retorno;
+			
+		} 
+		catch (SQLException e) {
+			throw new Exception(e.getMessage());
+		} 
+		catch (Exception e) {
+			throw new Exception(e.getMessage());
+		} 
+		finally {
+			con.close();
+		}
+	}
+	
+	public Item[] listar() throws Exception {
+		try {
+			con = this.abreConexao();
+			
+			List<Item> listaItens = new ArrayList<Item>();
+			
+			
+			String sql = "SELECT * FROM ITEM ORDER BY ID_ITEM";
+			pstmt = con.prepareStatement(sql);
+
+			rs = pstmt.executeQuery();
+			while (rs.next()) {
+				Item item =  new Item(rs.getInt("ID_ITEM"), rs.getString("ITEM_DESCRICAO"));
+				listaItens.add(item); 
+			}
+			Item[] retorno =  listaItens.toArray(new Item[0]);
+			return retorno;
+		}
+		catch (SQLException e) {
+			throw new Exception(e.getMessage());
+		}
+		catch (Exception e) {
+			throw new Exception(e.getMessage());
+		} 
+		finally {
+			con.close();
+		}
+		
+	}
+}

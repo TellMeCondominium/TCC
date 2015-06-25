@@ -1,0 +1,7 @@
+package model;
+
+public class Fabricante {
+	private Integer id;
+	private String descricao;
+	private List<Produto> produtos;
+}

@@ -1,0 +1,16 @@
+package factory;
+
+
+import model.Fabricante;
+
+public class AdiconaTarefa {
+
+	public static void main(String[] args) {
+		//inicia a conexao
+		Fabricante f = (Fabricante) PersistenceFactory.obterPorId(9);
+		PersistenceFactory.alterar(f);
+		System.out.println("Id: " +f.getId());
+		System.out.println("Desc: " +f.getDescricao());
+	}
+
+}

@@ -1,0 +1,176 @@
+package data.dao;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
+
+import util.Conection;
+import data.model.Imovel;
+
+public class ServicoImovelDAOImpl extends Conection implements ServicoImovelDAO {
+
+	 PreparedStatement pstmt;
+	 Statement st;
+	 ResultSet rs;
+	 Connection con;
+
+	public Imovel inserir(Imovel novo) throws Exception {
+		try {
+			//abre conexao com o banco
+		    con = this.abreConexao();
+		    con.setAutoCommit(false);  
+		    //insere o registro
+			String sql = "INSERT INTO IMOVEL VALUES(?, ?)";
+			pstmt = con.prepareStatement(sql);
+			pstmt.setString(1, novo.getBlocoRua());
+			pstmt.setString(2, novo.getNumero());
+			pstmt.execute();
+			
+			//busca ID gerado para devolver entidade completa
+			sql = "select @@identity as ID";
+			st = con.createStatement();
+			rs = st.executeQuery(sql);
+	        while (rs.next()){
+	        	novo.setIdImovel(rs.getInt("ID"));
+            }
+	        con.commit();
+	        con.setAutoCommit(true);  
+	        con.close();
+	        return novo;
+		} 
+		catch (SQLException e) {
+			if(e.getErrorCode() == 2627)
+				throw new Exception("Não foi possível inserir o registro/ Registro já existe.");
+			throw new Exception(e.getMessage());
+		}
+		catch (Exception e) {
+			throw new Exception(e.getMessage());
+		}
+		finally{
+			con.close();
+		}
+	}
+	
+	public void alterar(Integer id, Imovel imovel) throws Exception
+	{
+		try {
+			//abre conexao com o banco
+		    con = this.abreConexao();
+
+		    String sql = "UPDATE IMOVEL SET /n/r"+
+							" BLOCO_RUA = ?, NUMERO = ? /n/r"+
+							" WHERE ID_IMOVEL = ?";
+			pstmt = con.prepareStatement(sql);
+			pstmt.setString(1, imovel.getBlocoRua());
+			pstmt.setString(2, imovel.getNumero());
+			pstmt.setInt(3, id);
+			pstmt.execute();
+			
+	        con.close();
+		} 
+		catch (SQLException e) {
+			throw new Exception(e.getMessage());
+		}
+		catch (Exception e) {
+			throw new Exception(e.getMessage());
+		}
+		finally{
+			con.close();
+		}
+	}
+	
+	public void remover(Integer id) throws Exception {
+		try {
+			//abre conexao com o banco
+		    con = this.abreConexao();
+
+		    String sql = "DELETE FROM IMOVEL WHERE ID_IMOVEL = ?";
+			pstmt = con.prepareStatement(sql);
+			pstmt.setInt(1, id);
+			pstmt.execute();
+			
+	        con.close();
+		} 
+		catch (SQLException e) {
+			throw new Exception(e.getMessage());
+		}
+		catch (Exception e) {
+			throw new Exception(e.getMessage());
+		}
+		finally{
+			con.close();
+		}
+	}
+	
+	public Imovel obter(Integer id) throws Exception {
+		try {
+			con = this.abreConexao();
+			
+			Imovel retorno = new Imovel();
+			
+			if (id == null )
+				throw new Exception("Informe o ID para obter os dados.");
+			
+			String sql = "SELECT * FROM IMOVEL WHERE ID_IMOVEL = ?";
+			pstmt = con.prepareStatement(sql);
+			pstmt.setInt(1, id);
+
+			rs = pstmt.executeQuery();
+
+			if (rs.getFetchSize() > 0 ) {
+				rs.next();
+				retorno = new Imovel(rs.getInt("ID_IMOVEL"), 
+						rs.getString("BLOCO_RUA"), rs.getString("NUMERO"));
+			}
+			return retorno;
+		} 
+		catch (SQLException e) {
+			throw new Exception(e.getMessage());
+		} 
+		catch (Exception e) {
+			throw new Exception(e.getMessage());
+		} finally {
+			con.close();
+		}
+	}
+	
+	public Imovel[] listar(Integer id, String blocoRua, String numero) throws Exception {
+		try {
+			con = this.abreConexao();
+			
+			List<Imovel> lista = new ArrayList<Imovel>();
+			
+			String sql = "SELECT * FROM IMOVEL WHERE 1 = 1 ";
+			if(id != null)
+				sql+= " AND ID_IMOVEL = " + id;
+			if(blocoRua != null && blocoRua != "")
+				sql+= " AND BLOCO_RUA = " + id;
+			if(numero != null && numero != "")
+				sql+= " AND NUMERO = '" + numero + "' ";
+			
+			pstmt = con.prepareStatement(sql);
+
+			rs = pstmt.executeQuery();
+			while (rs.next()) {
+				lista.add(new Imovel(rs.getInt("ID_IMOVEL"), 
+						rs.getString("BLOCO_RUA"), rs.getString("NUMERO"))); 
+			}
+			Imovel[] retorno =  lista.toArray(new Imovel[0]);
+			return retorno;
+		}
+		catch (SQLException e) {
+			throw new Exception(e.getMessage());
+		}
+		catch (Exception e) {
+			throw new Exception(e.getMessage());
+		} 
+		finally {
+			con.close();
+		}
+	}
+
+}

@@ -1,0 +1,12 @@
+package dao;
+
+import model.Fabricante;
+
+public class FabricanteDAO {
+	public static final String TABELA = "FABRICANTE";
+	public void inserir(Fabricante novo){
+		StringBuilder sql  = new StringBuilder();
+		sql.append("INSERT INTO FABRICANTE ");
+		
+	}
+}

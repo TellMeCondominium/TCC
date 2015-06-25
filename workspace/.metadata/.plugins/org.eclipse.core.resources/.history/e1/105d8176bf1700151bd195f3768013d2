@@ -1,0 +1,46 @@
+package factory;
+
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.EntityTransaction;
+import javax.persistence.Persistence;
+
+import model.Fabricante;
+import model.Produto;
+
+public class AdiconaTarefa {
+
+	public static void main(String[] args) {
+		//inicia a conexao
+		EntityManagerFactory factory = Persistence.createEntityManagerFactory("TCM");
+	    EntityManager manager = factory.createEntityManager();
+	    EntityTransaction transaction = manager.getTransaction();
+	    transaction.begin();
+		
+		//cria as entidades
+		Fabricante f = new Fabricante();
+		f.setDescricao("Motorola");
+		manager.persist(f);
+		
+		Produto p1 = new Produto();
+		p1.setDescricao("Moto X");
+		p1.setValor(new BigDecimal("1200.00"));
+		p1.setFabricante(f);
+		
+		manager.persist(p1);
+		
+	    transaction.commit();  
+
+	    System.out.println("ID do fabricante: " + f.getId());
+	    System.out.println("ID do Produto 1: " + p1.getId());
+
+	    manager.close();
+	    factory.close();
+	}
+
+}

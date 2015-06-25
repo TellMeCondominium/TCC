@@ -1,0 +1,25 @@
+package dao;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+
+import factory.ConexaoFactory;
+import model.Fabricante;
+
+public class FabricanteDAO {
+	public static final String TABELA = "FABRICANTE";
+	public void inserir(Fabricante novo){
+		StringBuilder sql  = new StringBuilder();
+		sql.append("INSERT INTO FABRICANTE ");
+		sql.append("VALUES (?)");
+		try{
+			Connection con = ConexaoFactory.conectar();
+		}
+		catch(SQLException ex){
+			ex.printStackTrace();
+		}
+		catch (Exception ex) {
+			ex.printStackTrace();
+		}
+	}
+}

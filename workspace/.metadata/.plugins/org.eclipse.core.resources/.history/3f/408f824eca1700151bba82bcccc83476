@@ -1,0 +1,38 @@
+package factory;
+
+import java.util.List;
+
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.Persistence;
+
+import model.Fabricante;
+
+public class AdiconaTarefa {
+
+	public static void main(String[] args) {
+		Fabricante fab = AdiconaTarefa.obterPorId(1);
+		System.out.println("Fabricante");
+		System.out.println("ID: " + fab.getId());
+		System.out.println("Descrição: " + fab.getDescricao());
+	}
+
+	private static Fabricante obterPorId(int id) {
+		EntityManagerFactory factory = Persistence
+				.createEntityManagerFactory("TCM");
+		EntityManager manager = factory.createEntityManager();
+		return manager.find(Fabricante.class, id);
+	}
+
+	private static List<Fabricante> listar() {
+		EntityManagerFactory factory = Persistence
+				.createEntityManagerFactory("TCM");
+		EntityManager manager = factory.createEntityManager();
+		List<Fabricante> lista = manager.createQuery(
+				"select * from Fabricante where 1=1").getResultList();
+		for (Fabricante tarefa : lista) {
+			System.out.println(tarefa.getDescricao());
+		}
+	}
+
+}

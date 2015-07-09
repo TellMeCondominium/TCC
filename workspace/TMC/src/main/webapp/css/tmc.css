@@ -1,0 +1,7 @@
+input {
+	margin: 5px 5px 5px 5px !important;
+}
+
+.ui-datatable .ui-column-filter {
+	width: 99% !important;
+}

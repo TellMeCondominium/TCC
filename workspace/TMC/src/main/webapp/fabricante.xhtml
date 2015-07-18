@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui" template="formTemplate.xhtml">
+
+
+
+	<ui:define name="conteudo">
+		<!-- reflow="true"  paginatorPosition="bottom" <f:facet name="header">Fabricantes</f:facet> -->
+		<h:form>
+			<p:dataTable id="fabricantes"
+				emptyMessage="Nenhum Registro Encontrado"
+				value="#{MBFabricante.itens}" var="item" paginator="true" rows="5"
+				paginatorPosition="bottom" sortMode="multiple" reflow="true"
+				filteredValue="#{MBFabricante.itensFiltrados}">
+				<f:facet name="header">
+           			 Fabricantes
+      		    </f:facet>
+
+				<p:column filterBy="#{item.id}" filterMatchMode="contains"
+					headerText="Código" sortBy="#{item.id}">
+					<h:outputText value="#{item.id}" />
+				</p:column>
+
+				<p:column filterBy="#{item.descricao}" filterMatchMode="contains"
+					headerText="Descrição" sortBy="#{item.descricao}">
+					<h:outputText value="#{item.descricao}" />
+				</p:column>
+				
+			</p:dataTable>
+		</h:form>
+		<h:form>
+			<p:fieldset style="margin-bottom:20px; margin-top:10px;">
+				<h:panelGrid columns="1" cellpadding="5">
+					<p:inputText size="40" maxlength="100" value="#{MBFabricante.fabricante.descricao}" placeholder="Descrição" />
+				</h:panelGrid>
+				<h:panelGrid columns="1" cellpadding="5">
+					<p:commandButton value="Gravar" actionListener="#{MBFabricante.inserir}" oncomplete="javascript:location.reload(true)" />
+				</h:panelGrid>
+			</p:fieldset>
+		</h:form>
+	</ui:define>
+</ui:composition>

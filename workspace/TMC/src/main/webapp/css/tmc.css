@@ -5,3 +5,20 @@ input {
 .ui-datatable .ui-column-filter {
 	width: 99% !important;
 }
+
+.central {
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	margin-left: -180px;
+	margin-top: -150px;
+}
+
+.central60 {
+	position: absolute;
+	left: 50%;
+	top: 10%;
+	margin-left: -30%;
+	margin-bottom: 20px;
+}
+

@@ -10,7 +10,7 @@
 			<!-- dados da conexao -->
 			<property name="javax.persistence.jdbc.driver" value="net.sourceforge.jtds.jdbc.Driver" />
 			<property name="javax.persistence.jdbc.url"
-				value="jdbc:jtds:sqlserver://localhost;DatabaseName=teste" />
+				value="jdbc:jtds:sqlserver://localhost;DatabaseName=TMC" />
 			<property name="javax.persistence.jdbc.user" value="sa" />
 			<property name="javax.persistence.jdbc.password" value="123456" />
 

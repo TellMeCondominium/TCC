@@ -25,10 +25,15 @@ public class PersistenceFactory {
 		factory.close();
 	}
 
-	public static void incluir(Object entidade) {
-		PersistenceFactory.start();
-		manager.persist(entidade);
-		PersistenceFactory.close();
+	public static void incluir(Object entidade) throws Exception {
+		try {
+			PersistenceFactory.start();
+			manager.persist(entidade);
+		} catch (Exception e) {
+			throw new Exception("Erro ao executar o cadastro");
+		} finally{
+			PersistenceFactory.close();
+		}
 	}
 
 	public static void alterar(Object entidade) {
